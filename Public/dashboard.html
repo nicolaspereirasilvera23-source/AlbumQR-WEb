@@ -3,22 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Album QR · Dashboard</title>
+  <title>Qrly · Dashboard</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
+
+  <!-- 🔥 LOGO GLOBAL -->
+  <a href="/" class="corner-logo">
+    <img src="QRLY.png" alt="QRLY logo" />
+  </a>
+
   <div class="page">
+
+    <!-- 🎯 TOPBAR LIMPIO -->
     <div class="topbar">
-      <div class="logo">
-        <div class="logo-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="var(--bv)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="3" />
-            <circle cx="8.5" cy="8.5" r="1.5" />
-            <polyline points="21 15 16 10 5 21" />
-          </svg>
-        </div>
-        <span class="logo-name">Album QR</span>
-      </div>
       <button class="btn-logout" type="button" onclick="logout()">Cerrar sesión</button>
     </div>
 
@@ -40,30 +39,45 @@
         </div>
       </div>
 
+      <div id="card-status" class="card-status"></div>
+
       <form id="album-form">
         <div class="field">
           <label for="album-title">Título del álbum</label>
           <input id="album-title" name="title" type="text" placeholder="Cumpleaños de Marta, Boda 2025…" required />
         </div>
+
         <div class="field">
           <label for="album-description">Descripción <span class="field-note">(opcional)</span></label>
           <textarea id="album-description" name="description" rows="2" placeholder="Un mensaje para tus invitados…"></textarea>
         </div>
+
         <button class="btn-main" type="submit">Generar QR</button>
       </form>
 
       <div class="result" id="result">
         <p class="result-label">QR listo para compartir</p>
-        <div class="badge-new"><div class="badge-dot"></div> Álbum creado</div>
+
+        <div class="badge-new">
+          <div class="badge-dot"></div>
+          Álbum creado
+        </div>
+
         <div class="qr-wrap">
           <img src="" alt="QR del álbum" id="qr-image" />
         </div>
+
         <div class="link-row">
           <input type="text" readonly id="link-input" />
           <button class="btn-copy" type="button" onclick="copyLink()">Copiar</button>
         </div>
+
         <a class="btn-view" id="view-link" href="#" target="_blank">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
           Ver página pública del álbum
         </a>
       </div>
@@ -75,6 +89,7 @@
       <div class="step"><div class="step-dot">2</div><div class="step-text">Compartí el QR o el enlace con tus invitados</div></div>
       <div class="step"><div class="step-dot">3</div><div class="step-text">Ellos suben fotos y videos sin necesidad de cuenta</div></div>
     </div>
+
   </div>
 
   <script src="dashboard.js"></script>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Album QR · Invitados</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="corner-logo">
+    <img src="QRLY.png" alt="QRLY logo" />
+  </div>
+  <div class="page">
+    <div class="topbar">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--bv)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="3" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <polyline points="21 15 16 10 5 21" />
+          </svg>
+        </div>
+        <span class="logo-name">Album QR</span>
+      </div>
+      <button class="btn-logout" type="button" onclick="goHome()">Volver</button>
+    </div>
+
+    <div class="greeting">
+      <p>Invitado</p>
+      <h2>Cargá tus fotos al álbum</h2>
+    </div>
+
+    <div class="guest-banner" id="album-info">
+      <strong>Cargando álbum...</strong>
+      <p>Espere mientras verificamos el código QR.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--bvm)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+        </div>
+        <div>
+          <p class="card-title">Subí tu foto o video</p>
+          <p class="card-sub">Tus recuerdos van directo al álbum.</p>
+        </div>
+      </div>
+
+      <form id="guest-form">
+        <div class="field">
+          <label for="guest-name">Tu nombre</label>
+          <input id="guest-name" name="guestName" type="text" placeholder="Tu nombre (opcional)" />
+        </div>
+        <div class="field">
+          <label for="guest-description">Descripción</label>
+          <textarea id="guest-description" name="description" rows="2" placeholder="Contanos qué está pasando…"></textarea>
+        </div>
+        <div class="field">
+          <label for="guest-file">Seleccionar archivo</label>
+          <input id="guest-file" name="file" type="file" accept="image/*,video/*" required />
+        </div>
+        <button class="btn-main" type="submit">Subir archivo</button>
+      </form>
+
+      <div class="auth-message" id="guest-message"></div>
+    </div>
+
+    <div class="steps-card">
+      <p class="steps-title">Media del álbum</p>
+      <div id="media-grid" class="media-grid"></div>
+      <div id="empty-state" class="empty-state">Aún no hay archivos en este álbum.</div>
+    </div>
+  </div>
+
+  <script src="guest.js"></script>
+</body>
+</html>

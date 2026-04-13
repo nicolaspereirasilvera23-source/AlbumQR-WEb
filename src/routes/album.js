@@ -11,7 +11,7 @@ function normalizeText(value) {
 
 function getAlbumUrl(albumId) {
   const hostUrl = process.env.HOST_URL || 'http://localhost:3000'
-  return `${hostUrl}/media/album/${albumId}`
+  return `${hostUrl}/guest.html?albumId=${albumId}`
 }
 
 // Crear un álbum nuevo para el anfitrión autenticado y devolver el QR
@@ -33,6 +33,31 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 
   try {
+    const { data: existingAlbums, error: existingError } = await supabase
+      .from('albums')
+      .select('*')
+      .eq('host_id', hostId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+
+    if (existingError) {
+      console.error(existingError)
+      return res.status(500).json({ mensaje: 'Error verificando el álbum existente' })
+    }
+
+    if (existingAlbums && existingAlbums.length > 0) {
+      const album = existingAlbums[0]
+      const albumUrl = getAlbumUrl(album.id)
+      const qrDataUrl = await QRCode.toDataURL(albumUrl)
+
+      return res.status(200).json({
+        mensaje: 'Ya existe un álbum para este anfitrión',
+        album,
+        albumUrl,
+        qrDataUrl
+      })
+    }
+
     const { data, error } = await supabase
       .from('albums')
       .insert([{ title, description, host_id: hostId }])
@@ -59,7 +84,7 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 })
 
-// Listar álbumes del anfitrión autenticado
+// Obtener el álbum del anfitrión autenticado
 router.get('/host', authMiddleware, async (req, res) => {
   const hostId = req.user && req.user.id
   if (!hostId) {
@@ -72,16 +97,25 @@ router.get('/host', authMiddleware, async (req, res) => {
       .select('*')
       .eq('host_id', hostId)
       .order('created_at', { ascending: false })
+      .limit(1)
 
     if (error) {
       console.error(error)
-      return res.status(500).json({ mensaje: 'Error obteniendo los álbumes del anfitrión' })
+      return res.status(500).json({ mensaje: 'Error obteniendo el álbum del anfitrión' })
     }
 
-    res.json({ albums: data })
+    const album = Array.isArray(data) && data.length > 0 ? data[0] : null
+    if (!album) {
+      return res.json({ album: null })
+    }
+
+    const albumUrl = getAlbumUrl(album.id)
+    const qrDataUrl = await QRCode.toDataURL(albumUrl)
+
+    res.json({ album, albumUrl, qrDataUrl })
   } catch (error) {
     console.error(error)
-    res.status(500).json({ mensaje: 'Error del servidor al obtener álbumes' })
+    res.status(500).json({ mensaje: 'Error del servidor al obtener el álbum' })
   }
 })
 

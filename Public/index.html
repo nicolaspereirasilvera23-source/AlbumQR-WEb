@@ -3,25 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Album QR · Login</title>
+  <title>Qrly · Login</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
+
+  <!-- 🔥 LOGO GLOBAL -->
+  <a href="/" class="corner-logo">
+    <img src="QRLY.png" alt="QRLY logo" />
+  </a>
+
   <div class="wr">
+
+    <!-- 🎯 BRANDING LIMPIO -->
     <div class="brand">
-      <div class="brand-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="var(--brand-violet)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="3" />
-          <circle cx="8.5" cy="8.5" r="1.5" />
-          <polyline points="21 15 16 10 5 21" />
-        </svg>
-      </div>
-      <h1>Album QR</h1>
-      <p>Tu álbum compartido con código QR</p>
+      <h1>QRLY🚀</h1>
+      <p>Capturando momentos desde el inicio</p>
     </div>
 
     <div class="card">
       <div class="accent-bar"></div>
+
       <div class="tabs">
         <button class="tab active" type="button" onclick="switchTab('login', this)">Ingresar</button>
         <button class="tab" type="button" onclick="switchTab('register', this)">Crear cuenta</button>
@@ -32,10 +35,12 @@
           <label for="login-email">Correo electrónico</label>
           <input id="login-email" name="email" type="email" placeholder="tu@correo.com" required />
         </div>
+
         <div class="field">
           <label for="login-password">Contraseña</label>
           <input id="login-password" name="password" type="password" placeholder="••••••••" required />
         </div>
+
         <button class="btn-primary" type="submit">Ingresar</button>
       </form>
 
@@ -44,16 +49,19 @@
           <label for="register-email">Correo electrónico</label>
           <input id="register-email" name="email" type="email" placeholder="tu@correo.com" required />
         </div>
+
         <div class="field">
           <label for="register-password">Contraseña</label>
           <input id="register-password" name="password" type="password" placeholder="Mínimo 8 caracteres" required minlength="8" />
         </div>
+
         <button class="btn-primary" type="submit">Crear cuenta gratis</button>
       </form>
 
       <div class="help-text" id="help-text">
         ¿No tenés cuenta? <span onclick="switchTab('register', null)">Registrate gratis</span>
       </div>
+
       <div class="auth-message" id="auth-message"></div>
 
       <div class="steps">
@@ -61,6 +69,7 @@
         <div class="step"><div class="step-num">2</div><div class="step-text">Creá el álbum y obtenés un QR único</div></div>
         <div class="step"><div class="step-num">3</div><div class="step-text">Tus invitados escanean y suben fotos</div></div>
       </div>
+
     </div>
   </div>
 

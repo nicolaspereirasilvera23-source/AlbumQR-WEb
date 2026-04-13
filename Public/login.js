@@ -1,7 +1,42 @@
+// ==================== API ====================
+async function apiFetch(url, options = {}) {
+  const res = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers
+    },
+    ...options
+  })
+
+  const data = await res.json().catch(() => ({}))
+
+  if (!res.ok) {
+    throw new Error(data.mensaje || 'Error en la petición')
+  }
+
+  return data
+}
+
+// ==================== UI ====================
+const UI = {
+  clearMessage: () => {
+    document.getElementById('auth-message').textContent = ''
+  },
+
+  showMessage: (text, isError = false) => {
+    const el = document.getElementById('auth-message')
+    el.textContent = text
+    el.style.color = isError ? '#d73737' : 'var(--brand-violet-mid)'
+  }
+}
+
+// ==================== TABS ====================
 function switchTab(tab, el) {
-  document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'))
-  document.querySelectorAll('.form-section').forEach((section) => section.classList.remove('active'))
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+  document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'))
+
   document.getElementById(tab).classList.add('active')
+
   if (el) el.classList.add('active')
   else document.querySelector(`.tab[onclick*="${tab}"]`)?.classList.add('active')
 
@@ -10,81 +45,72 @@ function switchTab(tab, el) {
     tab === 'login'
       ? '¿No tenés cuenta? <span onclick="switchTab(\'register\', null)">Registrate gratis</span>'
       : '¿Ya tenés cuenta? <span onclick="switchTab(\'login\', null)">Ingresá acá</span>'
-  clearMessage()
+
+  UI.clearMessage()
 }
 
-function clearMessage() {
-  const message = document.getElementById('auth-message')
-  message.textContent = ''
+// ==================== AUTH ====================
+const auth = {
+  saveToken: (token) => localStorage.setItem('albumqr_token', token),
+  redirect: () => window.location.href = 'dashboard.html'
 }
 
-function showMessage(text, isError = false) {
-  const message = document.getElementById('auth-message')
-  message.textContent = text
-  message.style.color = isError ? '#d73737' : 'var(--brand-violet-mid)'
-}
-
-async function handleLogin(event) {
-  event.preventDefault()
-  clearMessage()
+// ==================== LOGIC ====================
+async function handleLogin(e) {
+  e.preventDefault()
+  UI.clearMessage()
 
   const email = document.getElementById('login-email').value.trim()
   const password = document.getElementById('login-password').value
 
   if (!email || !password) {
-    return showMessage('Completá email y contraseña', true)
+    return UI.showMessage('Completá email y contraseña', true)
   }
 
   try {
-    const response = await fetch('/auth/login', {
+    const data = await apiFetch('/auth/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     })
 
-    const payload = await response.json()
-    if (!response.ok) {
-      return showMessage(payload.mensaje || 'Error al iniciar sesión', true)
-    }
+    auth.saveToken(data.token)
+    auth.redirect()
 
-    localStorage.setItem('albumqr_token', payload.token)
-    window.location.href = 'dashboard.html'
-  } catch (error) {
-    showMessage('No se pudo conectar con el servidor', true)
+  } catch (err) {
+    UI.showMessage(err.message, true)
   }
 }
 
-async function handleRegister(event) {
-  event.preventDefault()
-  clearMessage()
+async function handleRegister(e) {
+  e.preventDefault()
+  UI.clearMessage()
 
   const email = document.getElementById('register-email').value.trim()
   const password = document.getElementById('register-password').value
 
   if (!email || !password) {
-    return showMessage('Completá email y contraseña', true)
+    return UI.showMessage('Completá email y contraseña', true)
   }
 
   try {
-    const response = await fetch('/auth/register', {
+    await apiFetch('/auth/register', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     })
 
-    const payload = await response.json()
-    if (!response.ok) {
-      return showMessage(payload.mensaje || 'Error al registrar', true)
-    }
-
-    showMessage('Cuenta creada. Iniciá sesión ahora.')
+    UI.showMessage('Cuenta creada. Iniciá sesión ahora.')
     switchTab('login', document.querySelector('.tab'))
-  } catch (error) {
-    showMessage('No se pudo conectar con el servidor', true)
+
+  } catch (err) {
+    UI.showMessage(err.message, true)
   }
 }
 
+// ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('login-form').addEventListener('submit', handleLogin)
-  document.getElementById('register-form').addEventListener('submit', handleRegister)
+  document.getElementById('login-form')
+    .addEventListener('submit', handleLogin)
+
+  document.getElementById('register-form')
+    .addEventListener('submit', handleRegister)
 })

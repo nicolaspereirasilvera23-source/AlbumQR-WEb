@@ -1,25 +1,7 @@
-// importar express, supabase, jsonwebtoken, crypto y dotenv
 const express = require('express')
 const supabase = require('./config/supabase')
-const jwt = require('jsonwebtoken')
-const crypto = require('crypto')
 require('dotenv').config()
 const router = express.Router()
-
-function hashPassword(password) {
-  const salt = crypto.randomBytes(16).toString('hex')
-  const hash = crypto.scryptSync(password, salt, 64).toString('hex')
-  return `${salt}:${hash}`
-}
-
-function verifyPassword(password, storedPassword) {
-  if (!storedPassword || typeof storedPassword !== 'string') return false
-  const [salt, key] = storedPassword.split(':')
-  if (!salt || !key) return false
-
-  const hash = crypto.scryptSync(password, salt, 64).toString('hex')
-  return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(key, 'hex'))
-}
 
 router.post('/register', async (req, res) => {
   const { email, password } = req.body
@@ -33,33 +15,35 @@ router.post('/register', async (req, res) => {
 
   const normalizedEmail = String(email).trim().toLowerCase()
 
-  const { data: existingHost, error: existingError } = await supabase
-    .from('anfitriones')
-    .select('id')
-    .eq('email', normalizedEmail)
-    .maybeSingle()
+  try {
+    let data, error
+    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      ({ data, error } = await supabase.auth.admin.createUser({
+        email: normalizedEmail,
+        password,
+        email_confirm: true
+      }))
+    } else {
+      ({ data, error } = await supabase.auth.signUp({
+        email: normalizedEmail,
+        password
+      }))
+    }
 
-  if (existingError) {
-    console.error(existingError)
-    return res.status(500).json({ mensaje: 'Error al verificar el anfitrión existente' })
-  }
+    if (error) {
+      console.error(error)
+      const msg = error.message || ''
+      if (msg.includes('already exists') || msg.includes('User already registered')) {
+        return res.status(409).json({ mensaje: 'El email ya está registrado' })
+      }
+      return res.status(500).json({ mensaje: 'Error al registrar anfitrión' })
+    }
 
-  if (existingHost) {
-    return res.status(409).json({ mensaje: 'El email ya está registrado' })
-  }
-
-  const hashedPassword = hashPassword(password)
-
-  const { error } = await supabase
-    .from('anfitriones')
-    .insert([{ email: normalizedEmail, password: hashedPassword }])
-
-  if (error) {
+    res.status(201).json({ mensaje: 'Anfitrión registrado', user: data.user || data })
+  } catch (error) {
     console.error(error)
-    return res.status(500).json({ mensaje: 'Error al registrar anfitrión' })
+    res.status(500).json({ mensaje: 'Error al registrar anfitrión' })
   }
-
-  res.status(201).json({ mensaje: 'Anfitrión registrado' })
 })
 
 router.post('/login', async (req, res) => {
@@ -70,29 +54,22 @@ router.post('/login', async (req, res) => {
 
   const normalizedEmail = String(email).trim().toLowerCase()
 
-  const { data, error } = await supabase
-    .from('anfitriones')
-    .select('*')
-    .eq('email', normalizedEmail)
-    .maybeSingle()
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: normalizedEmail,
+      password
+    })
 
-  if (error || !data) {
-    return res.status(401).json({ mensaje: 'Credenciales inválidas' })
+    if (error || !data.session) {
+      console.error(error)
+      return res.status(401).json({ mensaje: 'Credenciales inválidas' })
+    }
+
+    res.json({ token: data.session.access_token })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ mensaje: 'Error al iniciar sesión' })
   }
-
-  const passwordIsValid = verifyPassword(password, data.password)
-  if (!passwordIsValid) {
-    return res.status(401).json({ mensaje: 'Credenciales inválidas' })
-  }
-
-  const jwtSecret = process.env.JWT_SECRET
-  if (!jwtSecret) {
-    console.error('JWT_SECRET no está configurado')
-    return res.status(500).json({ mensaje: 'Error del servidor' })
-  }
-
-  const token = jwt.sign({ id: data.id, email: data.email }, jwtSecret, { expiresIn: '1h' })
-  res.json({ token })
 })
 
 module.exports = router

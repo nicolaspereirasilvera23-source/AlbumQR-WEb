@@ -1,6 +1,6 @@
-const jwt = require('jsonwebtoken')
+const supabase = require('../config/supabase')
 
-module.exports = (req, res, next) => {
+module.exports = async (req, res, next) => {
   const authHeader = req.headers.authorization
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ mensaje: 'Token no proporcionado' })
@@ -9,8 +9,13 @@ module.exports = (req, res, next) => {
   const token = authHeader.split(' ')[1]
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET)
-    req.user = payload
+    const { data, error } = await supabase.auth.getUser(token)
+    if (error || !data.user) {
+      console.error(error)
+      return res.status(401).json({ mensaje: 'Token inválido' })
+    }
+
+    req.user = data.user
     next()
   } catch (error) {
     console.error(error)
