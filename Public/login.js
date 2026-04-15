@@ -57,7 +57,7 @@ function switchTab(tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
   document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'))
 
-  document.getElementById(tab).classList.add('active')
+  document.getElementById(`${tab}-form`).classList.add('active')
   document.querySelector(`.tab[data-tab="${tab}"]`)?.classList.add('active')
 
   renderHelpText(tab)
