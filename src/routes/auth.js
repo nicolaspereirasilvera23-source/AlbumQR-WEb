@@ -8,11 +8,11 @@ const MIN_PASSWORD_LENGTH = 8
 router.post('/register', async (req, res) => {
   const { email, password } = req.body
   if (!email || !password) {
-    return res.status(400).json({ mensaje: 'Email y contraseÃ±a son requeridos' })
+    return res.status(400).json({ mensaje: 'Email y contraseña son requeridos' })
   }
 
   if (password.length < MIN_PASSWORD_LENGTH) {
-    return res.status(400).json({ mensaje: `La contraseÃ±a debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres` })
+    return res.status(400).json({ mensaje: `La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres` })
   }
 
   const normalizedEmail = String(email).trim().toLowerCase()
@@ -36,15 +36,15 @@ router.post('/register', async (req, res) => {
       console.error(error)
       const msg = error.message || ''
       if (msg.includes('already exists') || msg.includes('User already registered')) {
-        return res.status(409).json({ mensaje: 'El email ya estÃ¡ registrado' })
+        return res.status(409).json({ mensaje: 'El email ya esta registrado' })
       }
-      return res.status(500).json({ mensaje: 'Error al registrar anfitriÃ³n' })
+      return res.status(500).json({ mensaje: 'Error al registrar anfitrión' })
     }
 
     const createdUser = data && (data.user || data)
 
     res.status(201).json({
-      mensaje: 'AnfitriÃ³n registrado',
+      mensaje: 'Anfitrión registrado',
       user: createdUser
         ? {
             id: createdUser.id,
@@ -54,14 +54,14 @@ router.post('/register', async (req, res) => {
     })
   } catch (error) {
     console.error(error)
-    res.status(500).json({ mensaje: 'Error al registrar anfitriÃ³n' })
+    res.status(500).json({ mensaje: 'Error al registrar anfitrión' })
   }
 })
 
 router.post('/login', async (req, res) => {
   const { email, password } = req.body
   if (!email || !password) {
-    return res.status(400).json({ mensaje: 'Email y contraseÃ±a son requeridos' })
+    return res.status(400).json({ mensaje: 'Email y contraseña son requeridos' })
   }
 
   const normalizedEmail = String(email).trim().toLowerCase()
@@ -73,13 +73,13 @@ router.post('/login', async (req, res) => {
     })
 
     if (error || !data.session) {
-      return res.status(401).json({ mensaje: 'Credenciales invÃ¡lidas' })
+      return res.status(401).json({ mensaje: 'Credenciales invalidas' })
     }
 
     res.json({ token: data.session.access_token })
   } catch (error) {
     console.error(error)
-    res.status(500).json({ mensaje: 'Error al iniciar sesiÃ³n' })
+    res.status(500).json({ mensaje: 'Error al iniciar sesión' })
   }
 })
 
