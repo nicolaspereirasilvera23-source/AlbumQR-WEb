@@ -74,7 +74,6 @@ async function createAlbum(e) {
     })
 
     UI.setResult(data.albumUrl, data.qrDataUrl)
-
   } catch (err) {
     UI.showError(err.message)
   }
@@ -92,7 +91,6 @@ async function loadHostAlbum() {
       UI.clearStatus()
       document.getElementById('album-form').style.display = 'block'
     }
-
   } catch (err) {
     UI.showError(err.message)
   }
@@ -104,15 +102,23 @@ function copyLink() {
 
   navigator.clipboard.writeText(input.value)
     .then(() => {
-      const btn = document.querySelector('.btn-copy')
+      const btn = document.getElementById('copy-link-button')
       btn.textContent = '¡Copiado!'
-      setTimeout(() => btn.textContent = 'Copiar', 1500)
+      setTimeout(() => {
+        btn.textContent = 'Copiar'
+      }, 1500)
     })
     .catch(() => UI.showError('No se pudo copiar'))
 }
 
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('logout-button')
+    .addEventListener('click', () => auth.logout())
+
+  document.getElementById('copy-link-button')
+    .addEventListener('click', copyLink)
+
   auth.validate()
 
   document

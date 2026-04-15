@@ -1,24 +1,26 @@
 const express = require('express')
-const supabase = require('./config/supabase')
+const { supabase, supabaseAdmin } = require('../config/supabase')
 require('dotenv').config()
+
 const router = express.Router()
+const MIN_PASSWORD_LENGTH = 8
 
 router.post('/register', async (req, res) => {
   const { email, password } = req.body
   if (!email || !password) {
-    return res.status(400).json({ mensaje: 'Email y contraseña son requeridos' })
+    return res.status(400).json({ mensaje: 'Email y contraseÃ±a son requeridos' })
   }
 
-  if (password.length < 6) {
-    return res.status(400).json({ mensaje: 'La contraseña debe tener al menos 6 caracteres' })
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    return res.status(400).json({ mensaje: `La contraseÃ±a debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres` })
   }
 
   const normalizedEmail = String(email).trim().toLowerCase()
 
   try {
     let data, error
-    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      ({ data, error } = await supabase.auth.admin.createUser({
+    if (supabaseAdmin) {
+      ({ data, error } = await supabaseAdmin.auth.admin.createUser({
         email: normalizedEmail,
         password,
         email_confirm: true
@@ -34,22 +36,32 @@ router.post('/register', async (req, res) => {
       console.error(error)
       const msg = error.message || ''
       if (msg.includes('already exists') || msg.includes('User already registered')) {
-        return res.status(409).json({ mensaje: 'El email ya está registrado' })
+        return res.status(409).json({ mensaje: 'El email ya estÃ¡ registrado' })
       }
-      return res.status(500).json({ mensaje: 'Error al registrar anfitrión' })
+      return res.status(500).json({ mensaje: 'Error al registrar anfitriÃ³n' })
     }
 
-    res.status(201).json({ mensaje: 'Anfitrión registrado', user: data.user || data })
+    const createdUser = data && (data.user || data)
+
+    res.status(201).json({
+      mensaje: 'AnfitriÃ³n registrado',
+      user: createdUser
+        ? {
+            id: createdUser.id,
+            email: createdUser.email
+          }
+        : null
+    })
   } catch (error) {
     console.error(error)
-    res.status(500).json({ mensaje: 'Error al registrar anfitrión' })
+    res.status(500).json({ mensaje: 'Error al registrar anfitriÃ³n' })
   }
 })
 
 router.post('/login', async (req, res) => {
   const { email, password } = req.body
   if (!email || !password) {
-    return res.status(400).json({ mensaje: 'Email y contraseña son requeridos' })
+    return res.status(400).json({ mensaje: 'Email y contraseÃ±a son requeridos' })
   }
 
   const normalizedEmail = String(email).trim().toLowerCase()
@@ -61,14 +73,13 @@ router.post('/login', async (req, res) => {
     })
 
     if (error || !data.session) {
-      console.error(error)
-      return res.status(401).json({ mensaje: 'Credenciales inválidas' })
+      return res.status(401).json({ mensaje: 'Credenciales invÃ¡lidas' })
     }
 
     res.json({ token: data.session.access_token })
   } catch (error) {
     console.error(error)
-    res.status(500).json({ mensaje: 'Error al iniciar sesión' })
+    res.status(500).json({ mensaje: 'Error al iniciar sesiÃ³n' })
   }
 })
 

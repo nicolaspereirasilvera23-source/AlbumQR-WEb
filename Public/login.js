@@ -30,22 +30,37 @@ const UI = {
   }
 }
 
+function renderHelpText(tab) {
+  const helpText = document.getElementById('help-text')
+  helpText.replaceChildren()
+
+  const message = document.createElement('span')
+  const action = document.createElement('button')
+  action.type = 'button'
+  action.className = 'help-link'
+
+  if (tab === 'login') {
+    message.textContent = '¿No tenés cuenta? '
+    action.textContent = 'Registrate gratis'
+    action.addEventListener('click', () => switchTab('register'))
+  } else {
+    message.textContent = '¿Ya tenés cuenta? '
+    action.textContent = 'Ingresá acá'
+    action.addEventListener('click', () => switchTab('login'))
+  }
+
+  helpText.append(message, action)
+}
+
 // ==================== TABS ====================
-function switchTab(tab, el) {
+function switchTab(tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
   document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'))
 
   document.getElementById(tab).classList.add('active')
+  document.querySelector(`.tab[data-tab="${tab}"]`)?.classList.add('active')
 
-  if (el) el.classList.add('active')
-  else document.querySelector(`.tab[onclick*="${tab}"]`)?.classList.add('active')
-
-  const helpText = document.getElementById('help-text')
-  helpText.innerHTML =
-    tab === 'login'
-      ? '¿No tenés cuenta? <span onclick="switchTab(\'register\', null)">Registrate gratis</span>'
-      : '¿Ya tenés cuenta? <span onclick="switchTab(\'login\', null)">Ingresá acá</span>'
-
+  renderHelpText(tab)
   UI.clearMessage()
 }
 
@@ -75,7 +90,6 @@ async function handleLogin(e) {
 
     auth.saveToken(data.token)
     auth.redirect()
-
   } catch (err) {
     UI.showMessage(err.message, true)
   }
@@ -99,8 +113,7 @@ async function handleRegister(e) {
     })
 
     UI.showMessage('Cuenta creada. Iniciá sesión ahora.')
-    switchTab('login', document.querySelector('.tab'))
-
+    switchTab('login')
   } catch (err) {
     UI.showMessage(err.message, true)
   }
@@ -108,9 +121,15 @@ async function handleRegister(e) {
 
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.tab').forEach(tabButton => {
+    tabButton.addEventListener('click', () => switchTab(tabButton.dataset.tab))
+  })
+
   document.getElementById('login-form')
     .addEventListener('submit', handleLogin)
 
   document.getElementById('register-form')
     .addEventListener('submit', handleRegister)
+
+  renderHelpText('login')
 })

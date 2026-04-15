@@ -24,17 +24,23 @@ const UI = {
   },
 
   setAlbumInfo: (title, description) => {
-    document.getElementById('album-info').innerHTML = `
-      <strong>${title}</strong>
-      <p>${description || 'Subí fotos y videos para este álbum.'}</p>
-    `
+    const albumInfo = document.getElementById('album-info')
+    albumInfo.replaceChildren()
+
+    const titleEl = document.createElement('strong')
+    titleEl.textContent = title
+
+    const descriptionEl = document.createElement('p')
+    descriptionEl.textContent = description || 'Subí fotos y videos para este álbum.'
+
+    albumInfo.append(titleEl, descriptionEl)
   },
 
   renderMedia: (items) => {
     const grid = document.getElementById('media-grid')
     const empty = document.getElementById('empty-state')
 
-    grid.innerHTML = ''
+    grid.replaceChildren()
 
     if (!items?.length) {
       empty.style.display = 'block'
@@ -84,7 +90,6 @@ async function loadAlbum() {
 
     UI.setAlbumInfo(data.album.title, data.album.description)
     UI.renderMedia(data.media)
-
   } catch (err) {
     UI.showMessage(err.message, true)
   }
@@ -120,7 +125,6 @@ async function uploadFile(e) {
     fileInput.value = ''
 
     await loadAlbum()
-
   } catch (err) {
     UI.showMessage(err.message, true)
   }
@@ -133,6 +137,9 @@ function goHome() {
 
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('guest-back')
+    .addEventListener('click', goHome)
+
   document.getElementById('guest-form')
     .addEventListener('submit', uploadFile)
 

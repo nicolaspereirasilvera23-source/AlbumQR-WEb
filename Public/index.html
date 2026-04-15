@@ -8,17 +8,13 @@
 </head>
 
 <body>
-
-  <!-- 🔥 LOGO GLOBAL -->
   <a href="/" class="corner-logo">
     <img src="QRLY.png" alt="QRLY logo" />
   </a>
 
   <div class="wr">
-
-    <!-- 🎯 BRANDING LIMPIO -->
     <div class="brand">
-      <h1>QRLY🚀</h1>
+      <h1>QRLY</h1>
       <p>Capturando momentos desde el inicio</p>
     </div>
 
@@ -26,8 +22,8 @@
       <div class="accent-bar"></div>
 
       <div class="tabs">
-        <button class="tab active" type="button" onclick="switchTab('login', this)">Ingresar</button>
-        <button class="tab" type="button" onclick="switchTab('register', this)">Crear cuenta</button>
+        <button class="tab active" type="button" data-tab="login">Ingresar</button>
+        <button class="tab" type="button" data-tab="register">Crear cuenta</button>
       </div>
 
       <form id="login-form" class="form-section active">
@@ -58,9 +54,7 @@
         <button class="btn-primary" type="submit">Crear cuenta gratis</button>
       </form>
 
-      <div class="help-text" id="help-text">
-        ¿No tenés cuenta? <span onclick="switchTab('register', null)">Registrate gratis</span>
-      </div>
+      <div class="help-text" id="help-text"></div>
 
       <div class="auth-message" id="auth-message"></div>
 
@@ -69,7 +63,6 @@
         <div class="step"><div class="step-num">2</div><div class="step-text">Creá el álbum y obtenés un QR único</div></div>
         <div class="step"><div class="step-num">3</div><div class="step-text">Tus invitados escanean y suben fotos</div></div>
       </div>
-
     </div>
   </div>
 

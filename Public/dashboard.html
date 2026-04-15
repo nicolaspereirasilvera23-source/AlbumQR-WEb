@@ -8,17 +8,13 @@
 </head>
 
 <body>
-
-  <!-- 🔥 LOGO GLOBAL -->
   <a href="/" class="corner-logo">
     <img src="QRLY.png" alt="QRLY logo" />
   </a>
 
   <div class="page">
-
-    <!-- 🎯 TOPBAR LIMPIO -->
     <div class="topbar">
-      <button class="btn-logout" type="button" onclick="logout()">Cerrar sesión</button>
+      <button class="btn-logout" id="logout-button" type="button">Cerrar sesión</button>
     </div>
 
     <div class="greeting">
@@ -44,12 +40,12 @@
       <form id="album-form">
         <div class="field">
           <label for="album-title">Título del álbum</label>
-          <input id="album-title" name="title" type="text" placeholder="Cumpleaños de Marta, Boda 2025…" required />
+          <input id="album-title" name="title" type="text" placeholder="Cumpleaños de Marta, Boda 2025..." required />
         </div>
 
         <div class="field">
           <label for="album-description">Descripción <span class="field-note">(opcional)</span></label>
-          <textarea id="album-description" name="description" rows="2" placeholder="Un mensaje para tus invitados…"></textarea>
+          <textarea id="album-description" name="description" rows="2" placeholder="Un mensaje para tus invitados..."></textarea>
         </div>
 
         <button class="btn-main" type="submit">Generar QR</button>
@@ -69,10 +65,10 @@
 
         <div class="link-row">
           <input type="text" readonly id="link-input" />
-          <button class="btn-copy" type="button" onclick="copyLink()">Copiar</button>
+          <button class="btn-copy" id="copy-link-button" type="button">Copiar</button>
         </div>
 
-        <a class="btn-view" id="view-link" href="#" target="_blank">
+        <a class="btn-view" id="view-link" href="#" target="_blank" rel="noopener noreferrer">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
             <polyline points="15 3 21 3 21 9"/>
@@ -89,7 +85,6 @@
       <div class="step"><div class="step-dot">2</div><div class="step-text">Compartí el QR o el enlace con tus invitados</div></div>
       <div class="step"><div class="step-dot">3</div><div class="step-text">Ellos suben fotos y videos sin necesidad de cuenta</div></div>
     </div>
-
   </div>
 
   <script src="dashboard.js"></script>

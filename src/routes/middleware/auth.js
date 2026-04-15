@@ -1,4 +1,4 @@
-const supabase = require('../config/supabase')
+const { supabase } = require('../../config/supabase')
 
 module.exports = async (req, res, next) => {
   const authHeader = req.headers.authorization
@@ -12,13 +12,13 @@ module.exports = async (req, res, next) => {
     const { data, error } = await supabase.auth.getUser(token)
     if (error || !data.user) {
       console.error(error)
-      return res.status(401).json({ mensaje: 'Token inválido' })
+      return res.status(401).json({ mensaje: 'Token invÃ¡lido' })
     }
 
     req.user = data.user
     next()
   } catch (error) {
     console.error(error)
-    res.status(401).json({ mensaje: 'Token inválido' })
+    res.status(401).json({ mensaje: 'Token invÃ¡lido' })
   }
 }

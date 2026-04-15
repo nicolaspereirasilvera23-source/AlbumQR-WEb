@@ -197,10 +197,17 @@ a {
   margin-top: 1.25rem;
 }
 
-.help-text span {
+.help-text span,
+.help-link {
   color: var(--brand-violet-mid);
   cursor: pointer;
   font-weight: 500;
+}
+
+.help-link {
+  border: none;
+  background: transparent;
+  padding: 0;
 }
 
 .steps {
