@@ -28,7 +28,7 @@ async function apiFetch(url, options = {}) {
   const data = await res.json().catch(() => ({}))
 
   if (!res.ok) {
-    throw new Error(data.mensaje || 'Error en la petición')
+    throw new Error(data.mensaje || 'Error en la peticiÃ³n')
   }
 
   return data
@@ -55,6 +55,90 @@ const UI = {
     document.getElementById('qr-image').src = qr
     document.getElementById('link-input').value = url
     document.getElementById('view-link').href = url
+  },
+
+  setMediaMessage: (msg, isError = false) => {
+    const el = document.getElementById('host-media-message')
+    el.textContent = msg
+    el.classList.toggle('is-error', isError)
+  },
+
+  clearMediaMessage: () => {
+    const el = document.getElementById('host-media-message')
+    el.textContent = ''
+    el.classList.remove('is-error')
+  },
+
+  syncMediaEmptyState: () => {
+    const grid = document.getElementById('host-media-grid')
+    const empty = document.getElementById('host-media-empty')
+    empty.style.display = grid.children.length ? 'none' : 'block'
+  },
+
+  removeMediaCard: (mediaId) => {
+    const safeSelector = typeof CSS !== 'undefined' && CSS.escape
+      ? CSS.escape(mediaId)
+      : mediaId.replace(/"/g, '\\"')
+    const card = document.querySelector(`[data-media-id="${safeSelector}"]`)
+
+    if (card) {
+      card.remove()
+    }
+
+    UI.syncMediaEmptyState()
+  },
+
+  renderMedia: (items) => {
+    const grid = document.getElementById('host-media-grid')
+
+    grid.replaceChildren()
+
+    items.forEach(item => {
+      const card = document.createElement('article')
+      card.className = 'media-card media-card-host'
+      card.dataset.mediaId = item.id
+
+      let media
+
+      if (item.tipo?.startsWith('video')) {
+        media = document.createElement('video')
+        media.controls = true
+      } else {
+        media = document.createElement('img')
+        media.alt = item.descripcion || 'Archivo del Ã¡lbum'
+      }
+
+      media.src = item.url
+      card.appendChild(media)
+
+      const info = document.createElement('div')
+      info.className = 'media-card-body'
+
+      const author = document.createElement('p')
+      author.textContent = item.subido_por
+        ? `Subido por ${item.subido_por}`
+        : 'Subido por invitado'
+      info.appendChild(author)
+
+      if (item.descripcion) {
+        const description = document.createElement('p')
+        description.className = 'media-description'
+        description.textContent = item.descripcion
+        info.appendChild(description)
+      }
+
+      const deleteButton = document.createElement('button')
+      deleteButton.type = 'button'
+      deleteButton.className = 'media-delete-button'
+      deleteButton.dataset.mediaId = item.id
+      deleteButton.textContent = 'Borrar'
+      info.appendChild(deleteButton)
+
+      card.appendChild(info)
+      grid.appendChild(card)
+    })
+
+    UI.syncMediaEmptyState()
   }
 }
 
@@ -65,7 +149,7 @@ async function createAlbum(e) {
   const title = document.getElementById('album-title').value.trim()
   const description = document.getElementById('album-description').value.trim()
 
-  if (!title) return UI.showError('El título es obligatorio')
+  if (!title) return UI.showError('El tÃ­tulo es obligatorio')
 
   try {
     const data = await apiFetch('/album', {
@@ -74,6 +158,12 @@ async function createAlbum(e) {
     })
 
     UI.setResult(data.albumUrl, data.qrDataUrl)
+
+    if (data.album?.id) {
+      UI.setStatus(`Ya tenÃ©s un Ã¡lbum creado: ${data.album.title}`)
+      document.getElementById('album-form').style.display = 'none'
+      await loadHostMedia(data.album.id)
+    }
   } catch (err) {
     UI.showError(err.message)
   }
@@ -84,15 +174,52 @@ async function loadHostAlbum() {
     const data = await apiFetch('/album/host')
 
     if (data.album) {
-      UI.setStatus(`Ya tenés un álbum creado: ${data.album.title}`)
+      UI.setStatus(`Ya tenÃ©s un Ã¡lbum creado: ${data.album.title}`)
       document.getElementById('album-form').style.display = 'none'
       UI.setResult(data.albumUrl, data.qrDataUrl)
+      await loadHostMedia(data.album.id)
     } else {
       UI.clearStatus()
       document.getElementById('album-form').style.display = 'block'
+      UI.renderMedia([])
+      UI.clearMediaMessage()
     }
   } catch (err) {
     UI.showError(err.message)
+  }
+}
+
+async function loadHostMedia(albumId) {
+  try {
+    UI.clearMediaMessage()
+    const data = await apiFetch(`/media/album/${encodeURIComponent(albumId)}`)
+    UI.renderMedia(data.media || [])
+  } catch (err) {
+    UI.setMediaMessage(err.message, true)
+  }
+}
+
+async function deleteMedia(mediaId, button) {
+  if (!mediaId) return
+
+  const confirmed = window.confirm('¿Seguro que querés borrar este archivo? Esta acción no se puede deshacer.')
+  if (!confirmed) return
+
+  const previousText = button.textContent
+  button.disabled = true
+  button.textContent = 'Borrando...'
+
+  try {
+    const data = await apiFetch(`/media/${encodeURIComponent(mediaId)}`, {
+      method: 'DELETE'
+    })
+
+    UI.removeMediaCard(mediaId)
+    UI.setMediaMessage(data.mensaje || 'Media eliminado')
+  } catch (err) {
+    button.disabled = false
+    button.textContent = previousText
+    UI.setMediaMessage(err.message, true)
   }
 }
 
@@ -103,12 +230,22 @@ function copyLink() {
   navigator.clipboard.writeText(input.value)
     .then(() => {
       const btn = document.getElementById('copy-link-button')
-      btn.textContent = '¡Copiado!'
+      btn.textContent = 'Â¡Copiado!'
       setTimeout(() => {
         btn.textContent = 'Copiar'
       }, 1500)
     })
     .catch(() => UI.showError('No se pudo copiar'))
+}
+
+function handleMediaGridClick(event) {
+  const button = event.target.closest('.media-delete-button')
+
+  if (!button) {
+    return
+  }
+
+  deleteMedia(button.dataset.mediaId, button)
 }
 
 // ==================== INIT ====================
@@ -118,6 +255,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('copy-link-button')
     .addEventListener('click', copyLink)
+
+  document.getElementById('host-media-grid')
+    .addEventListener('click', handleMediaGridClick)
 
   auth.validate()
 

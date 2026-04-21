@@ -2,6 +2,7 @@ const express = require('express')
 const multer = require('multer')
 const { supabase } = require('../config/supabase')
 const cloudinary = require('../config/cloudinary')
+const authMiddleware = require('./middleware/auth')
 
 const router = express.Router()
 const MAX_FILE_SIZE_BYTES = Number.parseInt(process.env.MAX_UPLOAD_SIZE_BYTES || `${25 * 1024 * 1024}`, 10)
@@ -35,6 +36,17 @@ function parseAlbumId(value) {
   const id = String(value).trim()
 
   if (id === '' || !/^[a-zA-Z0-9-]{1,80}$/.test(id)) {
+    return null
+  }
+
+  return id
+}
+
+function parseMediaId(value) {
+  if (!value) return null
+  const id = String(value).trim()
+
+  if (id === '' || !/^[a-zA-Z0-9-]{1,120}$/.test(id)) {
     return null
   }
 
@@ -212,6 +224,76 @@ router.post('/', async (req, res) => {
   } catch (error) {
     console.error(error)
     res.status(500).json({ mensaje: 'Error subiendo el archivo' })
+  }
+})
+
+router.delete('/:mediaId', authMiddleware, async (req, res) => {
+  const hostId = req.user && req.user.id
+  const mediaId = parseMediaId(req.params.mediaId)
+
+  if (!hostId) {
+    return res.status(401).json({ mensaje: 'Anfitrión no autenticado' })
+  }
+
+  if (!mediaId) {
+    return res.status(400).json({ mensaje: 'mediaId inválido' })
+  }
+
+  try {
+    const { data: media, error: mediaError } = await supabase
+      .from('media')
+      .select('id, album_id, public_id, tipo')
+      .eq('id', mediaId)
+      .maybeSingle()
+
+    if (mediaError) {
+      console.error(mediaError)
+      return res.status(500).json({ mensaje: 'Error al obtener el medio' })
+    }
+
+    if (!media) {
+      return res.status(404).json({ mensaje: 'Media no encontrado' })
+    }
+
+    const { data: album, error: albumError } = await supabase
+      .from('albums')
+      .select('id')
+      .eq('id', media.album_id)
+      .eq('host_id', hostId)
+      .maybeSingle()
+
+    if (albumError) {
+      console.error(albumError)
+      return res.status(500).json({ mensaje: 'Error al verificar el álbum del anfitrión' })
+    }
+
+    if (!album) {
+      return res.status(403).json({ mensaje: 'No tenés permiso para borrar este medio' })
+    }
+
+    const destroyResult = await cloudinary.uploader.destroy(media.public_id, {
+      resource_type: media.tipo === 'video' ? 'video' : 'image'
+    })
+
+    if (destroyResult && destroyResult.result === 'error') {
+      console.error(destroyResult)
+      return res.status(500).json({ mensaje: 'Error al borrar el archivo' })
+    }
+
+    const { error: deleteError } = await supabase
+      .from('media')
+      .delete()
+      .eq('id', mediaId)
+
+    if (deleteError) {
+      console.error(deleteError)
+      return res.status(500).json({ mensaje: 'Error al borrar el medio' })
+    }
+
+    res.status(200).json({ mensaje: 'Media eliminado' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ mensaje: 'Error al borrar el medio' })
   }
 })
 

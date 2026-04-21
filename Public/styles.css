@@ -585,6 +585,11 @@ a {
   overflow: hidden;
 }
 
+.media-card-host {
+  display: flex;
+  flex-direction: column;
+}
+
 .media-card img,
 .media-card video {
   width: 100%;
@@ -598,6 +603,68 @@ a {
   padding: 0.8rem 0.9rem;
   font-size: 12px;
   color: var(--brand-gray-text);
+}
+
+.media-card-body {
+  display: grid;
+  gap: 0.7rem;
+  padding: 0.8rem 0.9rem 1rem;
+}
+
+.media-card-body p {
+  padding: 0;
+}
+
+.media-description {
+  color: var(--brand-black);
+  line-height: 1.4;
+}
+
+.media-delete-button {
+  border: none;
+  border-radius: 10px;
+  background: var(--brand-black);
+  color: #fff;
+  padding: 0.7rem 0.85rem;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.media-delete-button:hover {
+  background: #2a2930;
+}
+
+.media-delete-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.host-media-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 0.5px solid var(--brand-gray-mid);
+}
+
+.host-media-header {
+  margin-bottom: 0.75rem;
+}
+
+.host-media-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: var(--brand-gray-text);
+}
+
+.host-media-message {
+  min-height: 20px;
+  margin-bottom: 0.75rem;
+  font-size: 13px;
+  color: var(--brand-violet-mid);
+}
+
+.host-media-message.is-error {
+  color: #d73737;
 }
 
 .empty-state {

@@ -29,10 +29,12 @@ function createSupabaseStub() {
       from(table) {
         if (table === 'albums') {
           return {
+            filters: {},
             select() {
               return this
             },
-            eq() {
+            eq(column, value) {
+              this.filters[column] = value
               return this
             },
             order() {
@@ -41,14 +43,20 @@ function createSupabaseStub() {
             limit() {
               return this
             },
-            maybeSingle: async () => ({
-              data: {
-                id: 'album-1',
-                title: 'Cumple',
-                description: 'Fotos'
-              },
-              error: null
-            }),
+            async maybeSingle() {
+              if (this.filters.id === 'album-1' || this.filters.host_id === 'host-1') {
+                return {
+                  data: {
+                    id: 'album-1',
+                    title: 'Cumple',
+                    description: 'Fotos'
+                  },
+                  error: null
+                }
+              }
+
+              return { data: null, error: null }
+            },
             insert(rows) {
               return {
                 select() {
@@ -63,14 +71,31 @@ function createSupabaseStub() {
 
         if (table === 'media') {
           return {
+            filters: {},
             select() {
               return this
             },
-            eq() {
+            eq(column, value) {
+              this.filters[column] = value
               return this
             },
             order() {
               return this
+            },
+            async maybeSingle() {
+              if (this.filters.id === 'media-1') {
+                return {
+                  data: {
+                    id: 'media-1',
+                    album_id: 'album-1',
+                    public_id: 'album_1/file',
+                    tipo: 'image'
+                  },
+                  error: null
+                }
+              }
+
+              return { data: null, error: null }
             },
             insert(rows) {
               return {
@@ -86,6 +111,11 @@ function createSupabaseStub() {
                   }
                 }
               }
+            },
+            delete() {
+              return {
+                eq: async () => ({ error: null })
+              }
             }
           }
         }
@@ -97,7 +127,7 @@ function createSupabaseStub() {
   }
 }
 
-function createCloudinaryStub(uploadCalls) {
+function createCloudinaryStub(uploadCalls, destroyCalls = []) {
   return {
     uploader: {
       upload_stream(options, callback) {
@@ -113,6 +143,10 @@ function createCloudinaryStub(uploadCalls) {
             })
           }
         }
+      },
+      destroy(publicId, options) {
+        destroyCalls.push({ publicId, options })
+        return Promise.resolve({ result: 'ok' })
       }
     }
   }
@@ -237,7 +271,7 @@ test('POST /media rechaza archivos demasiado grandes', async () => {
   }
 })
 
-test('POST /media sube una imagen válida con el tipo correcto a Cloudinary', async () => {
+test('POST /media sube una imagen valida con el tipo correcto a Cloudinary', async () => {
   const uploadCalls = []
   const { app, restoreEnv } = loadApp({
     cloudinaryStub: createCloudinaryStub(uploadCalls)
@@ -262,6 +296,33 @@ test('POST /media sube una imagen válida con el tipo correcto a Cloudinary', as
       assert.equal(body.media.tipo, 'image')
       assert.equal(uploadCalls.length, 1)
       assert.equal(uploadCalls[0].resource_type, 'image')
+    })
+  } finally {
+    restoreEnv()
+  }
+})
+
+test('DELETE /media/:mediaId borra un medio del anfitrion autenticado', async () => {
+  const destroyCalls = []
+  const { app, restoreEnv } = loadApp({
+    cloudinaryStub: createCloudinaryStub([], destroyCalls)
+  })
+
+  try {
+    await withServer(app, async baseUrl => {
+      const response = await fetch(`${baseUrl}/media/media-1`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: 'Bearer token-1'
+        }
+      })
+      const body = await response.json()
+
+      assert.equal(response.status, 200)
+      assert.deepEqual(body, { mensaje: 'Media eliminado' })
+      assert.equal(destroyCalls.length, 1)
+      assert.equal(destroyCalls[0].publicId, 'album_1/file')
+      assert.equal(destroyCalls[0].options.resource_type, 'image')
     })
   } finally {
     restoreEnv()
