@@ -44,7 +44,7 @@ The host creates an album, generates a unique QR code and guests can instantly u
 Hosts can create an account and log into their dashboard.
 
 <p align="center">
-  <img src="public/assets/login.screenshot.png" width="420"/>
+  <img src="assets/login.screenshot.png" width="420"/>
 </p>
 
 ---
@@ -54,7 +54,7 @@ Hosts can create an account and log into their dashboard.
 The host creates a new album and configures basic information for guests.
 
 <p align="center">
-  <img src="public/assets/create-album.png" width="420"/>
+  <img src="assets/create-album.png" width="420"/>
 </p>
 
 ---
@@ -64,7 +64,7 @@ The host creates a new album and configures basic information for guests.
 QRLY generates a unique QR code and public link to share with guests.
 
 <p align="center">
-  <img src="public/assets/dashboard-qr.png" width="420"/>
+  <img src="assets/dashboard-qr.png" width="420"/>
 </p>
 
 ---
@@ -74,7 +74,7 @@ QRLY generates a unique QR code and public link to share with guests.
 Guests can upload photos and videos directly into the album without needing an account.
 
 <p align="center">
-  <img src="public/assets/guest-upload.png" width="420"/>
+  <img src="assets/guest-upload.png" width="420"/>
 </p>
 
 ---
